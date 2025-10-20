@@ -1,0 +1,1718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PionBot - Crypto Trading Analysis Platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            background: rgba(20, 25, 35, 0.9);
+            border-bottom: 1px solid rgba(255, 165, 0, 0.2);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #ffa500, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="text"], input[type="number"], select {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 165, 0, 0.3);
+            color: #e0e0e0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #ffa500;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        button {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #ffa500, #ff8c00);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 13px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 165, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .charts-container {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 15px;
+        }
+
+        .chart-card {
+            background: rgba(30, 35, 45, 0.8);
+            border: 1px solid rgba(255, 165, 0, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            min-height: 400px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 165, 0, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #ffa500;
+        }
+
+        .chart-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .timeframe-buttons {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .timeframe-btn {
+            padding: 5px 10px;
+            font-size: 12px;
+            background: rgba(255, 165, 0, 0.1);
+            border: 1px solid rgba(255, 165, 0, 0.3);
+            color: #e0e0e0;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+
+        .timeframe-btn.active {
+            background: #ffa500;
+            color: white;
+            border-color: #ffa500;
+        }
+
+        .chart-canvas {
+            flex: 1;
+            background: rgba(10, 15, 25, 0.5);
+            border-radius: 4px;
+            margin-bottom: 10px;
+            position: relative;
+            cursor: crosshair;
+        }
+
+        .chart-info {
+            font-size: 12px;
+            color: #a0a0a0;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            gap: 5px;
+        }
+
+        .info-label {
+            color: #ffa500;
+            font-weight: 600;
+        }
+
+        .collapsible-section {
+            border-top: 1px solid rgba(255, 165, 0, 0.1);
+            margin-top: 8px;
+            padding-top: 8px;
+        }
+
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px;
+            background: rgba(255, 165, 0, 0.05);
+            border-radius: 3px;
+            transition: all 0.2s;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .collapsible-header:hover {
+            background: rgba(255, 165, 0, 0.1);
+        }
+
+        .collapsible-content {
+            display: none;
+            padding: 8px;
+            font-size: 11px;
+            background: rgba(10, 15, 25, 0.3);
+            border-radius: 3px;
+            margin-top: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .collapsible-content.open {
+            display: block;
+        }
+
+        .parameter-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            border-bottom: 1px solid rgba(255, 165, 0, 0.05);
+        }
+
+        .parameter-name {
+            color: #ffa500;
+            font-weight: 600;
+        }
+
+        .parameter-value {
+            color: #90EE90;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            color: #ffa500;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            border: 1px solid rgba(255, 165, 0, 0.3);
+            z-index: 1000;
+            white-space: nowrap;
+        }
+
+        footer {
+            background: rgba(20, 25, 35, 0.9);
+            border-top: 1px solid rgba(255, 165, 0, 0.2);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .debug-toggle {
+            padding: 6px 12px;
+            font-size: 12px;
+            background: rgba(255, 165, 0, 0.1);
+            border: 1px solid rgba(255, 165, 0, 0.3);
+            color: #ffa500;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .debug-console {
+            position: fixed;
+            bottom: 50px;
+            left: 20px;
+            right: 20px;
+            max-height: 0;
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid rgba(255, 165, 0, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            z-index: 999;
+        }
+
+        .debug-console.open {
+            max-height: 300px;
+        }
+
+        .debug-header {
+            padding: 10px 15px;
+            background: rgba(255, 165, 0, 0.1);
+            border-bottom: 1px solid rgba(255, 165, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .debug-content {
+            overflow-y: auto;
+            max-height: 260px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #90EE90;
+            padding: 10px 15px;
+        }
+
+        .debug-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255, 165, 0, 0.1);
+        }
+
+        .debug-label {
+            color: #ffa500;
+            font-weight: 600;
+            min-width: 200px;
+        }
+
+        .debug-value {
+            color: #90EE90;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .status-connected {
+            background: #90EE90;
+            animation: pulse 1s infinite;
+        }
+
+        .status-error {
+            background: #ff6b6b;
+        }
+
+        .status-idle {
+            background: #ffa500;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .external-links {
+            display: flex;
+            gap: 10px;
+            font-size: 11px;
+        }
+
+        a {
+            color: #ffa500;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: #ffb84d;
+            text-decoration: underline;
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            font-size: 12px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stat-label {
+            color: #ffa500;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            color: #90EE90;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 165, 0, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 165, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 165, 0, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+
+            .timeframe-buttons {
+                flex-wrap: wrap;
+            }
+        }
+
+        .candlestick-up {
+            fill: #90EE90;
+            stroke: #90EE90;
+        }
+
+        .candlestick-down {
+            fill: #ff6b6b;
+            stroke: #ff6b6b;
+        }
+
+        .wick {
+            stroke: currentColor;
+            stroke-width: 1;
+        }
+
+        .arrow-up {
+            color: #90EE90;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .arrow-down {
+            color: #ff6b6b;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .prediction-line {
+            stroke: #ffa500;
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+            opacity: 0.7;
+        }
+
+        .correlation-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            background: rgba(255, 165, 0, 0.1);
+            border: 1px solid rgba(255, 165, 0, 0.3);
+            border-radius: 3px;
+            font-size: 10px;
+            margin: 2px;
+            color: #ffa500;
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            padding: 8px 12px;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 3px;
+            margin: 5px 0;
+        }
+
+        .success-message {
+            color: #90EE90;
+            padding: 8px 12px;
+            background: rgba(144, 238, 144, 0.1);
+            border-radius: 3px;
+            margin: 5px 0;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 165, 0, 0.3);
+            border-top: 2px solid #ffa500;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-title">🚀 PionBot - Crypto Trading Analysis</div>
+            <div class="header-controls">
+                <div class="input-group">
+                    <input type="text" id="pairInput" placeholder="Enter pair (e.g., BTCUSDT)" value="BTCUSDT">
+                    <button onclick="app.addChart()">Add Chart</button>
+                </div>
+                <div class="stats" id="headerStats">
+                    <div class="stat-item">
+                        <span class="status-indicator status-idle"></span>
+                        <span class="stat-label">Status:</span>
+                        <span class="stat-value" id="connectionStatus">Initializing...</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="charts-container" id="chartsContainer">
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #a0a0a0;">
+                    <p>👈 Enter a trading pair above and click "Add Chart" to get started</p>
+                    <p style="font-size: 12px; margin-top: 10px;">Example pairs: BTCUSDT, ETHUSDT, BNBUSDT, DOGEUSDT</p>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <div class="external-links">
+                <a href="https://www.tradingview.com/chart" target="_blank">📊 TradingView</a>
+                <a href="https://www.coingecko.com/en" target="_blank">📈 CoinGecko</a>
+                <a href="https://tradingeconomics.com/crypto" target="_blank">🔗 Correlations</a>
+                <a href="https://alternative.me/crypto/fear-and-greed-index/" target="_blank">📉 Fear & Greed</a>
+            </div>
+            <div class="stats" id="footerStats">
+                <div class="stat-item">
+                    <span class="stat-label">Memory:</span>
+                    <span class="stat-value" id="memoryUsage">0 MB</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Active Charts:</span>
+                    <span class="stat-value" id="activeCharts">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Parameters:</span>
+                    <span class="stat-value" id="parameterCount">0</span>
+                </div>
+                <button class="debug-toggle" onclick="app.toggleDebugConsole()">📋 Debug Console</button>
+            </div>
+        </footer>
+
+        <div class="debug-console" id="debugConsole">
+            <div class="debug-header">
+                <span>🔧 Debug Console</span>
+                <button onclick="app.toggleDebugConsole()" style="padding: 4px 8px; font-size: 11px;">Close</button>
+            </div>
+            <div class="debug-content" id="debugContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== CORE APPLICATION ====================
+        const app = {
+            charts: new Map(),
+            streams: new Map(),
+            wsConnections: {
+                pionex: null,
+                binance: null
+            },
+            debugLogs: [],
+            memoryTracker: { startTime: Date.now() },
+            analysisStats: {
+                totalParameters: 0,
+                activeAnalyses: 0,
+                cpuTimeMs: 0
+            },
+
+            // Initialize application
+            async init() {
+                this.log('🚀 Initializing PionBot...');
+                await this.connectToPionex();
+                await this.connectToBinance();
+                this.updateStats();
+                setInterval(() => this.updateStats(), 1000);
+                this.log('✅ Application initialized successfully');
+            },
+
+            // Connect to Pionex WebSocket (optional enhancement)
+            async connectToPionex() {
+                try {
+                    this.log('📡 Attempting Pionex WebSocket connection...');
+                    // Pionex requires subscription after connection
+                    this.wsConnections.pionex = new WebSocket('wss://ws.pionex.com/wsPub');
+                    let connectionTimeout = setTimeout(() => {
+                        if (this.wsConnections.pionex && this.wsConnections.pionex.readyState === 0) {
+                            this.wsConnections.pionex.close();
+                            this.log('⚠️ Pionex WebSocket timeout - using REST API instead');
+                            this.updateConnectionStatus('Using REST API');
+                        }
+                    }, 5000);
+                    
+                    this.wsConnections.pionex.onopen = () => {
+                        clearTimeout(connectionTimeout);
+                        this.log('✅ Pionex WebSocket connected');
+                        this.updateConnectionStatus('Pionex Connected');
+                    };
+
+                    this.wsConnections.pionex.onmessage = (event) => {
+                        try {
+                            const data = JSON.parse(event.data);
+                            this.handlePionexData(data);
+                        } catch (e) {
+                            this.log('⚠️ Error parsing Pionex data: ' + e.message, 'warn');
+                        }
+                    };
+
+                    this.wsConnections.pionex.onerror = (error) => {
+                        clearTimeout(connectionTimeout);
+                        this.log('⚠️ Pionex WebSocket unavailable - using REST API');
+                        this.updateConnectionStatus('REST API');
+                    };
+
+                    this.wsConnections.pionex.onclose = () => {
+                        clearTimeout(connectionTimeout);
+                        this.log('⚠️ Pionex WebSocket closed');
+                    };
+                } catch (error) {
+                    this.log('⚠️ WebSocket unavailable: ' + error.message + ' - using REST API');
+                }
+            },
+
+            // Connect to Binance WebSocket (optional enhancement)
+            async connectToBinance() {
+                try {
+                    this.log('📡 Attempting Binance WebSocket connection...');
+                    // Note: Binance WebSocket requires stream names in URL, e.g., /ws/btcusdt@kline_1m
+                    // For now using REST API which is more reliable from client-side
+                    this.log('ℹ️ Using Binance REST API for data streaming');
+                    this.updateConnectionStatus('Binance REST API');
+                } catch (error) {
+                    this.log('ℹ️ REST API mode: ' + error.message);
+                }
+            },
+
+            // Handle Pionex data
+            handlePionexData(data) {
+                if (data.type === 'ticker') {
+                    const symbol = data.symbol;
+                    this.charts.forEach((chart, key) => {
+                        if (chart.pair === symbol) {
+                            chart.updateFromStream(data);
+                        }
+                    });
+                }
+            },
+
+            // Handle Binance data
+            handleBinanceData(data) {
+                if (data.k) {
+                    const symbol = data.s;
+                    this.charts.forEach((chart, key) => {
+                        if (chart.pair === symbol) {
+                            chart.updateFromStream(data.k);
+                        }
+                    });
+                }
+            },
+
+            // Add new chart
+            addChart() {
+                const pairInput = document.getElementById('pairInput');
+                const pair = pairInput.value.toUpperCase().trim();
+
+                if (!pair) {
+                    this.log('⚠️ Please enter a trading pair', 'warn');
+                    return;
+                }
+
+                if (this.charts.has(pair)) {
+                    this.log('⚠️ Chart for ' + pair + ' already exists', 'warn');
+                    return;
+                }
+
+                const chartId = 'chart-' + Date.now();
+                const chart = new TradingChart(pair, chartId, this);
+                this.charts.set(pair, chart);
+
+                this.log('✅ Chart added for ' + pair);
+                pairInput.value = '';
+                this.updateStats();
+            },
+
+            // Remove chart
+            removeChart(pair) {
+                if (this.charts.has(pair)) {
+                    const chart = this.charts.get(pair);
+                    chart.destroy();
+                    this.charts.delete(pair);
+                    this.log('✅ Chart removed for ' + pair);
+                    this.updateStats();
+                }
+            },
+
+            // Update statistics
+            updateStats() {
+                document.getElementById('activeCharts').textContent = this.charts.size;
+                
+                let totalParams = 0;
+                this.charts.forEach(chart => {
+                    totalParams += chart.getParameterCount();
+                });
+                document.getElementById('parameterCount').textContent = totalParams;
+
+                const used = (performance.memory?.usedJSHeapSize || 0) / 1048576;
+                document.getElementById('memoryUsage').textContent = used.toFixed(2) + ' MB';
+            },
+
+            // Toggle debug console
+            toggleDebugConsole() {
+                const debugConsole = document.getElementById('debugConsole');
+                debugConsole.classList.toggle('open');
+                if (debugConsole.classList.contains('open')) {
+                    this.updateDebugDisplay();
+                }
+            },
+
+            // Log message
+            log(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                this.debugLogs.push({ message, type, timestamp });
+                if (this.debugLogs.length > 100) {
+                    this.debugLogs.shift();
+                }
+                console.log(message);
+            },
+
+            // Update debug display
+            updateDebugDisplay() {
+                const debugContent = document.getElementById('debugContent');
+                debugContent.innerHTML = '';
+
+                this.debugLogs.slice().reverse().forEach(log => {
+                    const line = document.createElement('div');
+                    line.className = 'debug-line';
+                    
+                    let icon = '📝';
+                    if (log.type === 'error') icon = '❌';
+                    else if (log.type === 'warn') icon = '⚠️';
+                    else if (log.type === 'success') icon = '✅';
+
+                    line.innerHTML = `
+                        <span class="debug-label">${icon} [${log.timestamp}]</span>
+                        <span class="debug-value">${log.message}</span>
+                    `;
+                    debugContent.appendChild(line);
+                });
+            },
+
+            // Update connection status
+            updateConnectionStatus(status) {
+                const statusElement = document.getElementById('connectionStatus');
+                if (statusElement) {
+                    statusElement.textContent = status;
+                }
+            }
+        };
+
+        // ==================== TRADING CHART CLASS ====================
+        class TradingChart {
+            constructor(pair, chartId, appInstance) {
+                this.pair = pair;
+                this.chartId = chartId;
+                this.app = appInstance;
+                this.candles = new Map();
+                this.indicators = {};
+                this.prediction = null;
+                this.currentTimeframe = '1m';
+                this.timeframes = ['1m', '13m', '29m', '229m', '997m'];
+                this.data = {};
+                this.hoverPoint = null;
+                this.isAnalyzing = false;
+                this.correlations = new Map();
+
+                this.createUI();
+                this.initializeTimeframes();
+                this.startDataCollection();
+            }
+
+            // Create chart UI
+            createUI() {
+                const container = document.getElementById('chartsContainer');
+                if (!container) return;
+
+                // Remove placeholder if it's the first chart
+                const placeholder = container.querySelector('[style*="grid-column"]');
+                if (placeholder && this.app.charts.size === 1) {
+                    placeholder.remove();
+                }
+
+                const chartCard = document.createElement('div');
+                chartCard.className = 'chart-card';
+                chartCard.id = this.chartId;
+                chartCard.innerHTML = `
+                    <div class="chart-header">
+                        <div class="chart-title">${this.pair} <span class="loading-spinner" style="display: none;" id="spinner-${this.chartId}"></span></div>
+                        <div class="chart-controls">
+                            <button onclick="app.charts.get('${this.pair}').toggleAnalysis()" style="padding: 5px 10px; font-size: 12px;">Analyze</button>
+                            <button onclick="app.removeChart('${this.pair}')" style="padding: 5px 10px; font-size: 12px; background: rgba(255, 107, 107, 0.5);">✕</button>
+                        </div>
+                    </div>
+                    <div class="timeframe-buttons" id="tf-${this.chartId}"></div>
+                    <canvas class="chart-canvas" id="canvas-${this.chartId}"></canvas>
+                    <div class="chart-info" id="info-${this.chartId}"></div>
+                    <div class="collapsible-section">
+                        <div class="collapsible-header" onclick="this.nextElementSibling.classList.toggle('open')">📊 Parameters & Accuracy</div>
+                        <div class="collapsible-content" id="params-${this.chartId}"></div>
+                    </div>
+                `;
+
+                container.appendChild(chartCard);
+                this.canvas = document.getElementById(`canvas-${this.chartId}`);
+                this.ctx = this.canvas.getContext('2d');
+                this.setupCanvas();
+            }
+
+            // Setup canvas
+            setupCanvas() {
+                this.canvas.width = this.canvas.offsetWidth;
+                this.canvas.height = this.canvas.offsetHeight;
+                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                this.canvas.addEventListener('mouseleave', () => this.handleMouseLeave());
+            }
+
+            // Initialize timeframes
+            initializeTimeframes() {
+                const container = document.getElementById(`tf-${this.chartId}`);
+                this.timeframes.forEach(tf => {
+                    const btn = document.createElement('button');
+                    btn.className = 'timeframe-btn' + (tf === '1m' ? ' active' : '');
+                    btn.textContent = tf;
+                    btn.onclick = () => this.switchTimeframe(tf);
+                    container.appendChild(btn);
+                    this.data[tf] = { candles: [], indicators: {} };
+                });
+            }
+
+            // Switch timeframe
+            switchTimeframe(timeframe) {
+                this.currentTimeframe = timeframe;
+                const buttons = document.querySelectorAll(`#tf-${this.chartId} .timeframe-btn`);
+                buttons.forEach(btn => {
+                    btn.classList.toggle('active', btn.textContent === timeframe);
+                });
+                this.render();
+            }
+
+            // Start data collection
+            async startDataCollection() {
+                try {
+                    // Subscribe to Pionex streams
+                    if (this.app.wsConnections.pionex && this.app.wsConnections.pionex.readyState === WebSocket.OPEN) {
+                        this.app.wsConnections.pionex.send(JSON.stringify({
+                            type: 'subscribe',
+                            topic: 'ticker',
+                            symbols: [this.pair]
+                        }));
+                    }
+
+                    // Fetch initial data from CoinGecko
+                    await this.fetchHistoricalData();
+                    
+                    // Start periodic rendering
+                    if (!this.renderInterval) {
+                        this.renderInterval = setInterval(() => this.render(), 1000);
+                    }
+
+                    // Auto-analyze after data collection
+                    setTimeout(() => this.autoAnalyze(), 2000);
+                } catch (error) {
+                    this.app.log('❌ Error starting data collection: ' + error.message, 'error');
+                }
+            }
+
+            // Fetch live historical data from Binance REST API
+            async fetchHistoricalData() {
+                try {
+                    this.app.log('📡 Fetching live data for ' + this.pair + ' from Binance...');
+                    
+                    // Fetch 1000 1-minute candles from Binance (covers ~16 hours of trading)
+                    const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=${this.pair}&interval=1m&limit=1000`);
+                    
+                    if (response.ok) {
+                        const klines = await response.json();
+                        this.processBinanceData(klines);
+                        this.app.log('✅ Loaded ' + klines.length + ' live candles for ' + this.pair);
+                    } else {
+                        this.app.log('⚠️ Binance API error ' + response.status + ' - generating synthetic data', 'warn');
+                        this.generateSyntheticData();
+                    }
+                } catch (error) {
+                    this.app.log('⚠️ Could not fetch live data: ' + error.message + ' - generating synthetic data', 'warn');
+                    this.generateSyntheticData();
+                }
+            }
+
+            // Process Binance klines data
+            processBinanceData(klines) {
+                if (!klines || klines.length === 0) return;
+                
+                this.data['1m'].candles = klines.map(k => ({
+                    time: k[0] / 1000,
+                    open: parseFloat(k[1]),
+                    high: parseFloat(k[2]),
+                    low: parseFloat(k[3]),
+                    close: parseFloat(k[4]),
+                    volume: parseFloat(k[7])
+                }));
+                
+                // Generate higher timeframe candles
+                this.generateHigherTimeframes();
+            }
+
+            // Process historical data from CoinGecko
+            processHistoricalData(data) {
+                if (data.prices && data.prices.length > 0) {
+                    const prices = data.prices;
+                    
+                    // Create candles from available data
+                    // CoinGecko returns hourly data for 7 days
+                    for (let i = 0; i < prices.length - 1; i++) {
+                        const candle = {
+                            time: prices[i][0] / 1000,
+                            open: prices[i][1],
+                            high: Math.max(prices[i][1], prices[i + 1][1]) * (1 + (Math.random() - 0.5) * 0.002),
+                            low: Math.min(prices[i][1], prices[i + 1][1]) * (1 - (Math.random() - 0.5) * 0.002),
+                            close: prices[i + 1][1],
+                            volume: 0
+                        };
+                        this.data['1m'].candles.push(candle);
+                    }
+
+                    // Generate higher timeframe candles
+                    this.generateHigherTimeframes();
+                }
+            }
+
+            // Generate synthetic OHLC data for testing
+            generateSyntheticData() {
+                const basePrice = 40000 + Math.random() * 5000; // Random base price
+                const now = Math.floor(Date.now() / 1000);
+                
+                // Generate 100 candles with realistic price movement
+                for (let i = 100; i > 0; i--) {
+                    const trend = Math.sin(i / 20) * 0.015; // Sinusoidal trend
+                    const noise = (Math.random() - 0.5) * 0.005;
+                    const volatility = 0.01;
+                    
+                    const price = basePrice * (1 + trend + noise);
+                    const open = price * (1 + (Math.random() - 0.5) * volatility);
+                    const close = price * (1 + (Math.random() - 0.5) * volatility);
+                    
+                    const candle = {
+                        time: now - (i * 60),
+                        open: open,
+                        high: Math.max(open, close) * (1 + Math.random() * 0.005),
+                        low: Math.min(open, close) * (1 - Math.random() * 0.005),
+                        close: close,
+                        volume: Math.random() * 1000000
+                    };
+                    
+                    this.data['1m'].candles.push(candle);
+                }
+                
+                // Generate higher timeframe candles
+                this.generateHigherTimeframes();
+                this.app.log('✅ Generated synthetic OHLC data for ' + this.pair);
+            }
+
+            // Generate higher timeframe candles
+            generateHigherTimeframes() {
+                const timeframeMultipliers = {
+                    '13m': 13,
+                    '29m': 29,
+                    '229m': 229,
+                    '997m': 997
+                };
+
+                Object.keys(timeframeMultipliers).forEach(tf => {
+                    const multiplier = timeframeMultipliers[tf];
+                    const candles = this.data['1m'].candles;
+                    const combined = [];
+
+                    for (let i = 0; i < candles.length; i += multiplier) {
+                        const batch = candles.slice(i, i + multiplier);
+                        if (batch.length > 0) {
+                            combined.push({
+                                time: batch[0].time,
+                                open: batch[0].open,
+                                high: Math.max(...batch.map(c => c.high)),
+                                low: Math.min(...batch.map(c => c.low)),
+                                close: batch[batch.length - 1].close,
+                                volume: batch.reduce((sum, c) => sum + c.volume, 0)
+                            });
+                        }
+                    }
+
+                    this.data[tf].candles = combined;
+                });
+            }
+
+            // Update from stream
+            updateFromStream(data) {
+                if (data.p || data.P) {
+                    // Pionex format
+                    const price = parseFloat(data.p || data.P);
+                    const time = Date.now() / 1000;
+                    this.addCandle('1m', price, time);
+                } else if (data.c) {
+                    // Binance format
+                    const price = parseFloat(data.c);
+                    const time = parseInt(data.T) / 1000;
+                    this.addCandle('1m', price, time);
+                }
+            }
+
+            // Add candle
+            addCandle(timeframe, price, time) {
+                const candles = this.data[timeframe].candles;
+                if (candles.length === 0) {
+                    candles.push({ time, open: price, high: price, low: price, close: price, volume: 0 });
+                } else {
+                    const lastCandle = candles[candles.length - 1];
+                    if (time - lastCandle.time < (parseInt(timeframe) * 60)) {
+                        lastCandle.close = price;
+                        lastCandle.high = Math.max(lastCandle.high, price);
+                        lastCandle.low = Math.min(lastCandle.low, price);
+                    } else {
+                        candles.push({ time, open: price, high: price, low: price, close: price, volume: 0 });
+                    }
+                }
+            }
+
+            // Auto-analyze
+            async autoAnalyze() {
+                if (this.isAnalyzing) return;
+                this.isAnalyzing = true;
+
+                try {
+                    const spinner = document.getElementById(`spinner-${this.chartId}`);
+                    if (spinner) spinner.style.display = 'inline-block';
+
+                    // Calculate indicators
+                    this.calculateIndicators();
+
+                    // Generate prediction
+                    this.generatePrediction();
+
+                    // Recognize patterns
+                    this.recognizePatterns();
+
+                    this.app.log(`✅ Analysis complete for ${this.pair}`);
+                } finally {
+                    this.isAnalyzing = false;
+                    const spinner = document.getElementById(`spinner-${this.chartId}`);
+                    if (spinner) spinner.style.display = 'none';
+                }
+            }
+
+            // Calculate indicators
+            calculateIndicators() {
+                const candles = this.data[this.currentTimeframe].candles;
+                if (candles.length < 26) return;
+
+                const closes = candles.map(c => c.close);
+                const highs = candles.map(c => c.high);
+                const lows = candles.map(c => c.low);
+
+                // MACD
+                this.data[this.currentTimeframe].indicators.macd = this.calculateMACD(closes);
+
+                // RSI
+                this.data[this.currentTimeframe].indicators.rsi = this.calculateRSI(closes);
+
+                // ATR
+                this.data[this.currentTimeframe].indicators.atr = this.calculateATR(highs, lows, closes);
+
+                // Bollinger Bands
+                this.data[this.currentTimeframe].indicators.bb = this.calculateBollingerBands(closes);
+
+                // Moving Averages
+                this.data[this.currentTimeframe].indicators.sma20 = this.calculateSMA(closes, 20);
+                this.data[this.currentTimeframe].indicators.sma50 = this.calculateSMA(closes, 50);
+                this.data[this.currentTimeframe].indicators.ema12 = this.calculateEMA(closes, 12);
+                this.data[this.currentTimeframe].indicators.ema26 = this.calculateEMA(closes, 26);
+            }
+
+            // MACD calculation
+            calculateMACD(closes) {
+                const ema12 = this.calculateEMA(closes, 12);
+                const ema26 = this.calculateEMA(closes, 26);
+                const macdLine = ema12.map((val, i) => val - ema26[i]);
+                const signalLine = this.calculateEMA(macdLine, 9);
+                return {
+                    macd: macdLine,
+                    signal: signalLine,
+                    histogram: macdLine.map((val, i) => val - signalLine[i])
+                };
+            }
+
+            // RSI calculation
+            calculateRSI(closes, period = 14) {
+                const rsi = [];
+                let gains = 0, losses = 0;
+
+                for (let i = 1; i < closes.length; i++) {
+                    const change = closes[i] - closes[i - 1];
+                    if (change > 0) gains += change;
+                    else losses += Math.abs(change);
+
+                    if (i < period) continue;
+
+                    const avgGain = gains / period;
+                    const avgLoss = losses / period;
+                    const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+                    rsi.push(100 - (100 / (1 + rs)));
+                }
+
+                return rsi;
+            }
+
+            // ATR calculation
+            calculateATR(highs, lows, closes, period = 14) {
+                const atr = [];
+                let sumTr = 0;
+
+                for (let i = 1; i < highs.length; i++) {
+                    const tr = Math.max(
+                        highs[i] - lows[i],
+                        Math.abs(highs[i] - closes[i - 1]),
+                        Math.abs(lows[i] - closes[i - 1])
+                    );
+
+                    sumTr += tr;
+                    if (i >= period) {
+                        atr.push(sumTr / period);
+                    }
+                }
+
+                return atr;
+            }
+
+            // Bollinger Bands calculation
+            calculateBollingerBands(closes, period = 20, stdDev = 2) {
+                const bb = { middle: [], upper: [], lower: [] };
+
+                for (let i = period - 1; i < closes.length; i++) {
+                    const slice = closes.slice(i - period + 1, i + 1);
+                    const mean = slice.reduce((a, b) => a + b) / period;
+                    const variance = slice.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / period;
+                    const std = Math.sqrt(variance);
+
+                    bb.middle.push(mean);
+                    bb.upper.push(mean + (std * stdDev));
+                    bb.lower.push(mean - (std * stdDev));
+                }
+
+                return bb;
+            }
+
+            // SMA calculation
+            calculateSMA(data, period) {
+                const sma = [];
+                for (let i = period - 1; i < data.length; i++) {
+                    const slice = data.slice(i - period + 1, i + 1);
+                    sma.push(slice.reduce((a, b) => a + b) / period);
+                }
+                return sma;
+            }
+
+            // EMA calculation
+            calculateEMA(data, period) {
+                const ema = [];
+                const k = 2 / (period + 1);
+
+                // Calculate SMA for first period
+                const firstSma = data.slice(0, period).reduce((a, b) => a + b) / period;
+                ema.push(firstSma);
+
+                // Calculate EMA
+                for (let i = period; i < data.length; i++) {
+                    const prevEma = ema[ema.length - 1];
+                    const newEma = data[i] * k + prevEma * (1 - k);
+                    ema.push(newEma);
+                }
+
+                return ema;
+            }
+
+            // Generate prediction
+            generatePrediction() {
+                const candles = this.data[this.currentTimeframe].candles;
+                const indicators = this.data[this.currentTimeframe].indicators;
+
+                if (!indicators.macd || !indicators.rsi) return;
+
+                const lastPrice = candles[candles.length - 1].close;
+                const macdHistogram = indicators.macd.histogram;
+                const rsi = indicators.rsi;
+
+                let predictedTrend = 'neutral';
+                let confidence = 0.5;
+
+                if (macdHistogram[macdHistogram.length - 1] > 0 && rsi[rsi.length - 1] > 50) {
+                    predictedTrend = 'up';
+                    confidence = Math.min(rsi[rsi.length - 1] / 100, 0.95);
+                } else if (macdHistogram[macdHistogram.length - 1] < 0 && rsi[rsi.length - 1] < 50) {
+                    predictedTrend = 'down';
+                    confidence = Math.min((100 - rsi[rsi.length - 1]) / 100, 0.95);
+                }
+
+                const atr = indicators.atr[indicators.atr.length - 1] || (lastPrice * 0.02);
+                const nextHigh = lastPrice + (atr * (confidence + 0.5));
+                const nextLow = lastPrice - (atr * (confidence + 0.5));
+
+                this.prediction = {
+                    trend: predictedTrend,
+                    confidence,
+                    nextHighPrice: nextHigh,
+                    nextLowPrice: nextLow,
+                    time: Date.now()
+                };
+            }
+
+            // Recognize patterns
+            recognizePatterns() {
+                const candles = this.data[this.currentTimeframe].candles;
+                if (candles.length < 5) return;
+
+                this.patterns = [];
+
+                // Look for fractal patterns (5 consecutive bars)
+                for (let i = 2; i < candles.length - 2; i++) {
+                    const mid = candles[i];
+                    const prev1 = candles[i - 1];
+                    const prev2 = candles[i - 2];
+                    const next1 = candles[i + 1];
+                    const next2 = candles[i + 2];
+
+                    // Up fractal
+                    if (mid.high > prev1.high && mid.high > prev2.high && mid.high > next1.high && mid.high > next2.high) {
+                        this.patterns.push({ type: 'up_fractal', index: i, price: mid.high });
+                    }
+
+                    // Down fractal
+                    if (mid.low < prev1.low && mid.low < prev2.low && mid.low < next1.low && mid.low < next2.low) {
+                        this.patterns.push({ type: 'down_fractal', index: i, price: mid.low });
+                    }
+                }
+            }
+
+            // Toggle analysis
+            toggleAnalysis() {
+                this.autoAnalyze();
+            }
+
+            // Get parameter count
+            getParameterCount() {
+                let count = 0;
+                Object.values(this.data).forEach(timeframeData => {
+                    count += Object.keys(timeframeData.indicators).length;
+                });
+                return count;
+            }
+
+            // Render chart
+            render() {
+                if (!this.canvas || !this.ctx) return;
+
+                const candles = this.data[this.currentTimeframe].candles;
+                if (candles.length === 0) return;
+
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+                // Draw background grid
+                this.drawGrid();
+
+                // Draw candlesticks
+                this.drawCandlesticks(candles);
+
+                // Draw indicators
+                this.drawIndicators();
+
+                // Draw prediction
+                this.drawPrediction();
+
+                // Draw patterns
+                this.drawPatterns();
+
+                // Draw hover info
+                this.drawHoverInfo();
+
+                // Update info text
+                this.updateInfo();
+            }
+
+            // Draw grid
+            drawGrid() {
+                this.ctx.strokeStyle = 'rgba(255, 165, 0, 0.05)';
+                this.ctx.lineWidth = 1;
+
+                for (let i = 0; i < this.canvas.width; i += 50) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(i, 0);
+                    this.ctx.lineTo(i, this.canvas.height);
+                    this.ctx.stroke();
+                }
+
+                for (let i = 0; i < this.canvas.height; i += 50) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(0, i);
+                    this.ctx.lineTo(this.canvas.width, i);
+                    this.ctx.stroke();
+                }
+            }
+
+            // Draw candlesticks with golden ratio segmented scaling
+            drawCandlesticks(candles) {
+                if (candles.length === 0) return;
+
+                const high = Math.max(...candles.map(c => c.high));
+                const low = Math.min(...candles.map(c => c.low));
+                const range = high - low || 1;
+
+                // Golden ratio constant
+                const PHI = 1.618034;
+                const SEGMENT_SIZE = 40; // Candles per segment
+                
+                // Calculate x positions using golden ratio scaling
+                let x = 20;
+                const xPositions = [];
+                
+                // Build segments: recent candles get more width
+                for (let i = candles.length - 1; i >= 0; i--) {
+                    const segmentIndex = Math.floor((candles.length - 1 - i) / SEGMENT_SIZE);
+                    const candleWidthInSegment = Math.max(1, 6 / Math.pow(PHI, segmentIndex));
+                    xPositions[i] = x;
+                    x += candleWidthInSegment + 0.5;
+                }
+                
+                // Adjust if chart extends beyond canvas
+                if (x > this.canvas.width - 20) {
+                    const scale = (this.canvas.width - 40) / x;
+                    for (let i = 0; i < xPositions.length; i++) {
+                        xPositions[i] = 20 + (xPositions[i] - 20) * scale;
+                    }
+                }
+
+                // Draw each candle
+                candles.forEach((candle, idx) => {
+                    const normalizedHigh = (candle.high - low) / range;
+                    const normalizedLow = (candle.low - low) / range;
+                    const normalizedOpen = (candle.open - low) / range;
+                    const normalizedClose = (candle.close - low) / range;
+
+                    const y1 = this.canvas.height * (1 - normalizedHigh);
+                    const y2 = this.canvas.height * (1 - normalizedLow);
+                    const y3 = this.canvas.height * (1 - normalizedOpen);
+                    const y4 = this.canvas.height * (1 - normalizedClose);
+
+                    const candleX = xPositions[idx];
+                    const nextX = idx < xPositions.length - 1 ? xPositions[idx + 1] : candleX + 2;
+                    const candleWidth = Math.max(1, nextX - candleX - 0.5);
+
+                    const color = candle.close >= candle.open ? '#90EE90' : '#ff6b6b';
+                    // Older candles are darker
+                    const darkness = idx / candles.length;
+                    const opacity = Math.max(0.3, 1 - darkness * 0.6);
+
+                    this.ctx.fillStyle = color;
+                    this.ctx.globalAlpha = opacity;
+                    this.ctx.strokeStyle = color;
+                    this.ctx.lineWidth = 1;
+
+                    // Wick (high-low line)
+                    this.ctx.globalAlpha = opacity * 0.7;
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(candleX + candleWidth / 2, y1);
+                    this.ctx.lineTo(candleX + candleWidth / 2, y2);
+                    this.ctx.stroke();
+
+                    // Body (open-close rectangle)
+                    this.ctx.globalAlpha = opacity;
+                    const bodyTop = Math.min(y3, y4);
+                    const bodyHeight = Math.abs(y3 - y4) || 1;
+                    this.ctx.fillRect(candleX, bodyTop, candleWidth, bodyHeight);
+                    this.ctx.strokeRect(candleX, bodyTop, candleWidth, bodyHeight);
+                });
+                
+                // Reset global alpha
+                this.ctx.globalAlpha = 1.0;
+            }
+
+            // Draw indicators
+            drawIndicators() {
+                const indicators = this.data[this.currentTimeframe].indicators;
+                if (!indicators) return;
+
+                // You can add indicator visualization here
+                // For now, indicators are calculated and stored
+            }
+
+            // Draw prediction
+            drawPrediction() {
+                if (!this.prediction) return;
+
+                const candles = this.data[this.currentTimeframe].candles;
+                if (candles.length === 0) return;
+                
+                const high = Math.max(...candles.map(c => c.high));
+                const low = Math.min(...candles.map(c => c.low));
+                const range = high - low || 1;
+
+                // Position prediction after last candle
+                const PHI = 1.618034;
+                const SEGMENT_SIZE = 40;
+                let x = 20;
+                
+                for (let i = candles.length - 1; i >= 0; i--) {
+                    const segmentIndex = Math.floor((candles.length - 1 - i) / SEGMENT_SIZE);
+                    const candleWidthInSegment = Math.max(1, 6 / Math.pow(PHI, segmentIndex));
+                    x += candleWidthInSegment + 0.5;
+                }
+                
+                // Adjust for canvas width
+                if (x > this.canvas.width - 40) {
+                    x = this.canvas.width - 40;
+                }
+
+                // Draw prediction lines
+                this.ctx.strokeStyle = '#ffa500';
+                this.ctx.setLineDash([5, 5]);
+                this.ctx.lineWidth = 2;
+                this.ctx.globalAlpha = 0.8;
+
+                const highY = this.canvas.height * (1 - (this.prediction.nextHighPrice - low) / range);
+                const lowY = this.canvas.height * (1 - (this.prediction.nextLowPrice - low) / range);
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, highY);
+                this.ctx.lineTo(Math.min(x + 80, this.canvas.width - 10), highY);
+                this.ctx.stroke();
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, lowY);
+                this.ctx.lineTo(x + 100, lowY);
+                this.ctx.stroke();
+
+                this.ctx.setLineDash([]);
+            }
+
+            // Get x position for candle index using golden ratio scaling
+            getCandleXPosition(candleIndex) {
+                const candles = this.data[this.currentTimeframe].candles;
+                const PHI = 1.618034;
+                const SEGMENT_SIZE = 40;
+                
+                let x = 20;
+                for (let i = candles.length - 1; i >= 0; i--) {
+                    if (i === candleIndex) return x;
+                    const segmentIndex = Math.floor((candles.length - 1 - i) / SEGMENT_SIZE);
+                    const candleWidthInSegment = Math.max(1, 6 / Math.pow(PHI, segmentIndex));
+                    x += candleWidthInSegment + 0.5;
+                }
+                return x;
+            }
+
+            // Get candle index from x position using golden ratio scaling
+            getCandleIndexFromX(mouseX) {
+                const candles = this.data[this.currentTimeframe].candles;
+                const PHI = 1.618034;
+                const SEGMENT_SIZE = 40;
+                
+                let x = 20;
+                let totalWidth = 20;
+                
+                for (let i = candles.length - 1; i >= 0; i--) {
+                    const segmentIndex = Math.floor((candles.length - 1 - i) / SEGMENT_SIZE);
+                    const candleWidthInSegment = Math.max(1, 6 / Math.pow(PHI, segmentIndex));
+                    totalWidth += candleWidthInSegment + 0.5;
+                }
+                
+                const scale = totalWidth > this.canvas.width - 40 ? (this.canvas.width - 40) / totalWidth : 1;
+                
+                x = 20;
+                for (let i = candles.length - 1; i >= 0; i--) {
+                    const segmentIndex = Math.floor((candles.length - 1 - i) / SEGMENT_SIZE);
+                    const candleWidthInSegment = Math.max(1, 6 / Math.pow(PHI, segmentIndex));
+                    const scaledWidth = (candleWidthInSegment + 0.5) * scale;
+                    
+                    if (mouseX >= x && mouseX < x + scaledWidth) {
+                        return i;
+                    }
+                    x += scaledWidth;
+                }
+                
+                return -1;
+            }
+
+            // Draw patterns
+            drawPatterns() {
+                if (!this.patterns) return;
+                
+                const candles = this.data[this.currentTimeframe].candles;
+                const high = Math.max(...candles.map(c => c.high));
+                const low = Math.min(...candles.map(c => c.low));
+                const range = high - low || 1;
+
+                this.patterns.forEach(pattern => {
+                    const candleX = this.getCandleXPosition(pattern.index);
+                    const priceY = this.canvas.height * (1 - (pattern.price - low) / range);
+                    
+                    if (pattern.type === 'up_fractal') {
+                        this.ctx.fillStyle = '#90EE90';
+                        this.ctx.font = 'bold 14px Arial';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.globalAlpha = 0.8;
+                        this.ctx.fillText('▲', candleX, priceY - 15);
+                    } else if (pattern.type === 'down_fractal') {
+                        this.ctx.fillStyle = '#ff6b6b';
+                        this.ctx.font = 'bold 14px Arial';
+                        this.ctx.textAlign = 'center';
+                        this.ctx.globalAlpha = 0.8;
+                        this.ctx.fillText('▼', candleX, priceY + 20);
+                    }
+                });
+                this.ctx.globalAlpha = 1.0;
+            }
+
+            // Draw hover info
+            drawHoverInfo() {
+                if (!this.hoverPoint) return;
+
+                const { x, y, price, time } = this.hoverPoint;
+
+                this.ctx.strokeStyle = 'rgba(255, 165, 0, 0.3)';
+                this.ctx.lineWidth = 1;
+                this.ctx.setLineDash([2, 2]);
+                this.ctx.globalAlpha = 0.7;
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(x, 0);
+                this.ctx.lineTo(x, this.canvas.height);
+                this.ctx.stroke();
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(0, y);
+                this.ctx.lineTo(this.canvas.width, y);
+                this.ctx.stroke();
+
+                this.ctx.setLineDash([]);
+                this.ctx.globalAlpha = 1.0;
+            }
+
+            // Handle mouse move
+            handleMouseMove(event) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+
+                const candles = this.data[this.currentTimeframe].candles;
+                if (candles.length === 0) return;
+
+                const candleIndex = this.getCandleIndexFromX(x);
+                if (candleIndex >= 0 && candleIndex < candles.length) {
+                    const candle = candles[candleIndex];
+                    const high = Math.max(...candles.map(c => c.high));
+                    const low = Math.min(...candles.map(c => c.low));
+                    const range = high - low || 1;
+                    const price = low + (1 - y / this.canvas.height) * range;
+                    
+                    this.hoverPoint = {
+                        x,
+                        y,
+                        price: price.toFixed(2),
+                        time: new Date(candle.time * 1000).toLocaleTimeString()
+                    };
+                }
+            }
+
+            // Handle mouse leave
+            handleMouseLeave() {
+                this.hoverPoint = null;
+            }
+
+            // Update info
+            updateInfo() {
+                const infoContainer = document.getElementById(`info-${this.chartId}`);
+                if (!infoContainer) return;
+
+                const candles = this.data[this.currentTimeframe].candles;
+                if (candles.length === 0) return;
+
+                const lastCandle = candles[candles.length - 1];
+                let info = `
+                    <span class="info-item">
+                        <span class="info-label">O:</span>
+                        <span>${lastCandle.open.toFixed(2)}</span>
+                    </span>
+                    <span class="info-item">
+                        <span class="info-label">H:</span>
+                        <span>${lastCandle.high.toFixed(2)}</span>
+                    </span>
+                    <span class="info-item">
+                        <span class="info-label">L:</span>
+                        <span>${lastCandle.low.toFixed(2)}</span>
+                    </span>
+                    <span class="info-item">
+                        <span class="info-label">C:</span>
+                        <span>${lastCandle.close.toFixed(2)}</span>
+                    </span>
+                `;
+
+                if (this.prediction) {
+                    info += `
+                        <span class="info-item">
+                            <span class="info-label">Trend:</span>
+                            <span>${this.prediction.trend.toUpperCase()}</span>
+                        </span>
+                        <span class="info-item">
+                            <span class="info-label">Confidence:</span>
+                            <span>${(this.prediction.confidence * 100).toFixed(1)}%</span>
+                        </span>
+                    `;
+                }
+
+                infoContainer.innerHTML = info;
+
+                // Update parameters panel
+                const paramsContainer = document.getElementById(`params-${this.chartId}`);
+                if (paramsContainer) {
+                    const indicators = this.data[this.currentTimeframe].indicators;
+                    let paramsHtml = '';
+
+                    if (indicators.rsi && indicators.rsi.length > 0) {
+                        paramsHtml += `
+                            <div class="parameter-item">
+                                <span class="parameter-name">RSI (14):</span>
+                                <span class="parameter-value">${indicators.rsi[indicators.rsi.length - 1].toFixed(2)}</span>
+                            </div>
+                        `;
+                    }
+
+                    if (indicators.macd) {
+                        paramsHtml += `
+                            <div class="parameter-item">
+                                <span class="parameter-name">MACD:</span>
+                                <span class="parameter-value">${indicators.macd.macd[indicators.macd.macd.length - 1].toFixed(4)}</span>
+                            </div>
+                            <div class="parameter-item">
+                                <span class="parameter-name">Signal:</span>
+                                <span class="parameter-value">${indicators.macd.signal[indicators.macd.signal.length - 1].toFixed(4)}</span>
+                            </div>
+                        `;
+                    }
+
+                    if (indicators.atr && indicators.atr.length > 0) {
+                        paramsHtml += `
+                            <div class="parameter-item">
+                                <span class="parameter-name">ATR:</span>
+                                <span class="parameter-value">${indicators.atr[indicators.atr.length - 1].toFixed(4)}</span>
+                            </div>
+                        `;
+                    }
+
+                    if (this.prediction) {
+                        paramsHtml += `
+                            <div class="parameter-item">
+                                <span class="parameter-name">Next High:</span>
+                                <span class="parameter-value">${this.prediction.nextHighPrice.toFixed(2)}</span>
+                            </div>
+                            <div class="parameter-item">
+                                <span class="parameter-name">Next Low:</span>
+                                <span class="parameter-value">${this.prediction.nextLowPrice.toFixed(2)}</span>
+                            </div>
+                        `;
+                    }
+
+                    paramsContainer.innerHTML = paramsHtml || '<p style="color: #a0a0a0; font-size: 11px;">Analyzing...</p>';
+                }
+            }
+
+            // Destroy chart
+            destroy() {
+                if (this.renderInterval) {
+                    clearInterval(this.renderInterval);
+                }
+                const chartCard = document.getElementById(this.chartId);
+                if (chartCard) {
+                    chartCard.remove();
+                }
+            }
+        };
+
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            app.init();
+        });
+    </script>
+</body>
+</html>
