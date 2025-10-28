@@ -3,107 +3,225 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Peaceful LLM - Admin Console</title>
+    <title>Zenhaiku Testing Interface</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .token-display { @apply bg-gradient-to-r from-amber-100 to-orange-100 border-2 border-amber-400 rounded-lg p-4 text-center; }
-        .pulse { animation: pulse 2s infinite; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .gradient-text { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .pulse-dot { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-    <div class="min-h-screen p-4">
-        <div class="max-w-2xl mx-auto">
-            <div class="text-center mb-8 mt-8">
-                <h1 class="text-4xl font-bold text-white mb-2">🔐 Admin Console</h1>
-                <p class="text-gray-400">Peaceful LLM - Session Token Generator</p>
-            </div>
-
-            <div class="bg-white rounded-2xl shadow-2xl p-8 fade-in">
-                <div class="mb-8">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Generate Access Token</h2>
-                    
-                    <form id="tokenForm" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Target Email</label>
-                            <input type="email" id="targetEmail" value="frantisek.vedma@icloud.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" readonly>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                                <input type="tel" id="phoneNumber" value="+420608158747" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" readonly>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Token Validity (minutes)</label>
-                                <input type="number" id="tokenValidity" value="110" min="15" max="1440" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            </div>
-                        </div>
-
-                        <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 rounded-lg hover:shadow-lg transition">🔑 Generate & Send Token</button>
-                    </form>
-                </div>
-
-                <div id="tokenDisplay" class="mb-8 hidden">
-                    <div class="token-display mb-4">
-                        <p class="text-xs text-gray-600 mb-2">Your Access Token</p>
-                        <p id="generatedToken" class="text-3xl font-mono font-bold text-amber-900 tracking-wider mb-2">• • • • • •</p>
-                        <p id="tokenExpiry" class="text-xs text-gray-700">Valid for 110 minutes</p>
-                        <button type="button" id="copyTokenBtn" class="mt-3 px-4 py-1 bg-amber-500 text-white rounded hover:bg-amber-600 transition text-sm">Copy Token</button>
-                    </div>
-
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                        <p class="text-sm text-blue-800"><strong>✓ Token sent to:</strong><br>📧 Email: <span id="sentEmail"></span><br>📱 SMS: <span id="sentPhone"></span></p>
-                    </div>
-
-                    <div id="deliveryStatus" class="space-y-2"></div>
-
-                    <button type="button" id="generateNewBtn" class="w-full mt-4 bg-gray-600 text-white font-semibold py-2 rounded-lg hover:bg-gray-700 transition">Generate Another Token</button>
-                </div>
-
-                <div class="mt-8 pt-8 border-t border-gray-200">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">⚙️ Settings</h3>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Default Session Duration (days)</label>
-                            <input type="number" id="defaultDuration" value="365" min="1" max="3650" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Admin Notification Email</label>
-                            <input type="email" id="adminEmail" value="frantisek.vedma@icloud.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        </div>
-
-                        <button type="button" id="saveSettingsBtn" class="w-full bg-green-600 text-white font-semibold py-2 rounded-lg hover:bg-green-700 transition">Save Settings</button>
-                    </div>
-                </div>
-
-                <div class="mt-8 pt-8 border-t border-gray-200">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">📋 Token History</h3>
-                    <div id="tokenHistory" class="space-y-2 max-h-64 overflow-y-auto bg-gray-50 rounded-lg p-4">
-                        <p class="text-sm text-gray-500">No tokens generated yet</p>
-                    </div>
+<body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 min-h-screen">
+    <div class="min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-4xl fade-in">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <h1 class="text-5xl font-bold gradient-text mb-3">Zenhaiku Testing Hub</h1>
+                <p class="text-gray-300 text-lg">Quick access to application interfaces for testing</p>
+                <div class="flex items-center justify-center gap-2 mt-4">
+                    <div class="w-2 h-2 bg-green-500 rounded-full pulse-dot"></div>
+                    <span class="text-green-400 text-sm">All systems operational</span>
                 </div>
             </div>
 
-            <div class="mt-8 bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                <h4 class="font-semibold text-indigo-900 mb-2">ℹ️ How It Works</h4>
-                <ul class="text-sm text-indigo-800 space-y-1">
-                    <li>✓ Generate 8-character access tokens valid for up to 110 minutes</li>
-                    <li>✓ Tokens are sent via email and SMS simultaneously</li>
-                    <li>✓ Each token is unique and single-use</li>
-                    <li>✓ Tokens expire automatically after the set duration</li>
-                    <li>✓ All token history is encrypted and stored locally</li>
-                </ul>
+            <!-- Main Grid -->
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <!-- User Interface Card -->
+                <div class="card-hover bg-white rounded-2xl shadow-2xl overflow-hidden">
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-3xl">🚀</span>
+                            <h2 class="text-2xl font-bold">User Interface</h2>
+                        </div>
+                        <p class="text-blue-100">Main application with AI proxy</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4 mb-6">
+                            <div class="flex items-start gap-3">
+                                <span class="text-green-500 font-bold">✓</span>
+                                <span class="text-gray-700">Multi-provider AI access</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-green-500 font-bold">✓</span>
+                                <span class="text-gray-700">Real-time provider switching</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-green-500 font-bold">✓</span>
+                                <span class="text-gray-700">Encrypted session storage</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-green-500 font-bold">✓</span>
+                                <span class="text-gray-700">Settings & preferences</span>
+                            </div>
+                        </div>
+                        <button onclick="launchUserInterface()" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold py-3 rounded-lg hover:shadow-lg transition">
+                            Launch User Interface
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Admin Console Card -->
+                <div class="card-hover bg-white rounded-2xl shadow-2xl overflow-hidden">
+                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 p-6 text-white">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-3xl">⚙️</span>
+                            <h2 class="text-2xl font-bold">Admin Console</h2>
+                        </div>
+                        <p class="text-purple-100">Management and configuration</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4 mb-6">
+                            <div class="flex items-start gap-3">
+                                <span class="text-green-500 font-bold">✓</span>
+                                <span class="text-gray-700">Token generation</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-green-500 font-bold">✓</span>
+                                <span class="text-gray-700">Session configuration</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-green-500 font-bold">✓</span>
+                                <span class="text-gray-700">Token history tracking</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <span class="text-green-500 font-bold">✓</span>
+                                <span class="text-gray-700">Admin settings</span>
+                            </div>
+                        </div>
+                        <button onclick="launchAdminConsole()" class="w-full bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold py-3 rounded-lg hover:shadow-lg transition">
+                            Launch Admin Console
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Testing Tools Section -->
+            <div class="bg-white rounded-2xl shadow-2xl p-8 mb-8">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                    <span>🧪</span> Testing Tools
+                </h3>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <button onclick="testSession()" class="bg-blue-50 hover:bg-blue-100 border-2 border-blue-200 rounded-lg p-4 text-left transition">
+                        <div class="font-semibold text-blue-700 mb-1">Test Session</div>
+                        <div class="text-sm text-blue-600">Create and validate test session</div>
+                    </button>
+                    <button onclick="clearStorage()" class="bg-orange-50 hover:bg-orange-100 border-2 border-orange-200 rounded-lg p-4 text-left transition">
+                        <div class="font-semibold text-orange-700 mb-1">Clear Storage</div>
+                        <div class="text-sm text-orange-600">Reset all local data</div>
+                    </button>
+                    <button onclick="viewConsole()" class="bg-gray-50 hover:bg-gray-100 border-2 border-gray-200 rounded-lg p-4 text-left transition">
+                        <div class="font-semibold text-gray-700 mb-1">Browser Console</div>
+                        <div class="text-sm text-gray-600">Open developer tools (F12)</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Reference -->
+            <div class="bg-slate-800 rounded-2xl p-8 border border-slate-700">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <span>📚</span> Quick Reference
+                </h3>
+                <div class="grid md:grid-cols-2 gap-6 text-sm text-gray-300">
+                    <div>
+                        <div class="font-semibold text-white mb-2">User Interface</div>
+                        <ul class="space-y-1 text-xs">
+                            <li>• Email-based session generation</li>
+                            <li>• Multi-provider AI access</li>
+                            <li>• Real-time provider status</li>
+                            <li>• Encrypted data storage</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-white mb-2">Admin Console</div>
+                        <ul class="space-y-1 text-xs">
+                            <li>• Generate API tokens</li>
+                            <li>• Configure session duration</li>
+                            <li>• View token history</li>
+                            <li>• Manage settings</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="text-center mt-12 text-gray-400 text-sm">
+                <p>Testing Interface v1.0 • Zenhaiku Application</p>
+                <p class="mt-2 text-xs text-gray-500">For development and testing purposes only</p>
             </div>
         </div>
     </div>
 
-    <script src="admin.js"></script>
+    <script>
+        // Launch User Interface with test session
+        function launchUserInterface() {
+            const testEmail = 'test@zenhaiku.local';
+            const sessionData = {
+                email: testEmail,
+                timestamp: Date.now(),
+                expires: Date.now() + (365 * 24 * 60 * 60 * 1000),
+                apiCode: generateApiCode(),
+                providers: {}
+            };
+            
+            // Store test session
+            localStorage.setItem('zenhaiku_session', JSON.stringify(sessionData));
+            localStorage.setItem('zenhaiku_test_mode', 'true');
+            
+            // Navigate to main interface
+            window.location.href = 'index.html?test=true';
+        }
+
+        // Launch Admin Console
+        function launchAdminConsole() {
+            localStorage.setItem('zenhaiku_admin_mode', 'true');
+            localStorage.setItem('zenhaiku_test_mode', 'true');
+            window.location.href = 'admin.html?test=true';
+        }
+
+        // Generate test API code
+        function generateApiCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 16; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        // Test session creation
+        function testSession() {
+            const testEmail = 'test@zenhaiku.local';
+            const sessionData = {
+                email: testEmail,
+                timestamp: Date.now(),
+                expires: Date.now() + (365 * 24 * 60 * 60 * 1000),
+                apiCode: generateApiCode()
+            };
+            
+            localStorage.setItem('zenhaiku_session', JSON.stringify(sessionData));
+            
+            alert(`✓ Test session created!\n\nEmail: ${testEmail}\nAPI Code: ${sessionData.apiCode}\nExpires: ${new Date(sessionData.expires).toLocaleDateString()}`);
+        }
+
+        // Clear all storage
+        function clearStorage() {
+            if (confirm('Clear all local storage data? This cannot be undone.')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                alert('✓ All storage cleared!');
+                location.reload();
+            }
+        }
+
+        // Open browser console
+        function viewConsole() {
+            alert('Opening browser console...\n\nPress F12 or right-click → Inspect → Console');
+        }
+    </script>
 </body>
 </html>

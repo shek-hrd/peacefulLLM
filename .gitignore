@@ -16,3 +16,4 @@ build/
 out/
 .vercel/
 .netlify/
+test-interface.html
